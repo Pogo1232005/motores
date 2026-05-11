@@ -11,6 +11,8 @@ public class EnemyController : MonoBehaviour
 
 
     [SerializeField] private GameObject target;
+    [SerializeField] GameData gameData;
+    public float baseSpeed = 3.5f;
     private NavMeshAgent agent;
 
     [Header("Settings")]
@@ -33,6 +35,7 @@ public class EnemyController : MonoBehaviour
         maxhealth = data.GetMaxHealth();
         curHealth = maxhealth;
         agent = GetComponent<NavMeshAgent>();
+        agent.speed = baseSpeed * gameData.enemySpeedMultiplier;
     }
     void Move()
     {

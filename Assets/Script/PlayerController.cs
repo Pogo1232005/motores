@@ -33,6 +33,9 @@ public class PlayerController : MonoBehaviour
 
     InputAction[] m_switchWeaponAction = new InputAction[3];
 
+    InputAction m_saveAction;
+    InputAction m_resetAction;
+
     [SerializeField] GameObject[] Weapons = new GameObject[3];
 
     Yarma currentWeapon;
@@ -43,8 +46,9 @@ public class PlayerController : MonoBehaviour
     [SerializeField] float attack_range = 10f;
     [SerializeField] float cooldown = 1f;
     bool can_shoot = true;
+    public float baseSpeed = 5f;
 
-
+    [SerializeField] GameData gameData;
     void Awake()
     {
         m_agent = GetComponent<NavMeshAgent>();
@@ -54,6 +58,9 @@ public class PlayerController : MonoBehaviour
         m_moveAction = m_input.Main.Move;
 
         m_switchWeaponAction = new InputAction[3] { m_input.Main.weapon1, m_input.Main.weapon2, m_input.Main.weapon3};
+
+        m_saveAction = m_input.Main.SaveAndQuit;
+        m_resetAction = m_input.Main.ResetGame;
     }
 
     void Start()
@@ -67,7 +74,11 @@ public class PlayerController : MonoBehaviour
             }
         }
 
-        
+        EnemyController[] enemies = FindObjectsOfType<EnemyController>();
+
+        SaveSystem.Load(gameData, gameObject, enemies);
+
+        m_agent.speed = baseSpeed * gameData.playerSpeedMultiplier;
 
 
     }
@@ -130,6 +141,16 @@ public class PlayerController : MonoBehaviour
             }
         }
        */
+
+        if (m_saveAction.WasPressedThisFrame())
+        {
+            SaveAndQuit();
+        }
+
+        if (m_resetAction.WasPressedThisFrame())
+        {
+            ResetGame();
+        }
     }
     private void OnDrawGizmos()
     {
@@ -172,6 +193,24 @@ public class PlayerController : MonoBehaviour
                 Debug.Log("NO detecta nada");
             }
         }
+    }
+
+    void SaveAndQuit()
+    {
+        gameData.playerPosition = transform.position;
+
+        EnemyController[] enemies = FindObjectsOfType<EnemyController>();
+        SaveSystem.Save(gameData, enemies);
+        Application.Quit();
+    }
+
+    void ResetGame()
+    {
+        SaveSystem.DeleteSave();
+
+        gameData.resetData();
+
+        UnityEngine.SceneManagement.SceneManager.LoadScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex);
     }
    /* IEnumerator ShootCooldown()
     {
